@@ -12,6 +12,8 @@ NUM_UNVERSIONED_DATASET_PARTS = 2  # e.g.: <owner>/<dataset>
 NUM_VERSIONED_MODEL_PARTS = 5  # e.g.: <owner>/<model>/<framework>/<variation>/<version>
 NUM_UNVERSIONED_MODEL_PARTS = 4  # e.g.: <owner>/<model>/<framework>/<variation>
 
+NUM_UNVERSIONED_NOTEBOOK_PARTS = 2  # e.g.: <owner>/<notebook>
+
 
 @dataclass
 class ResourceHandle:
@@ -171,4 +173,7 @@ def parse_competition_handle(handle: str) -> CompetitionHandle:
 
 def parse_notebook_handle(handle: str) -> NotebookHandle:
     parts = handle.split("/")
+    if len(parts) != NUM_UNVERSIONED_NOTEBOOK_PARTS:
+        msg = f"Invalid notebook handle: {handle}"
+        raise ValueError(msg)
     return NotebookHandle(owner=parts[0], notebook=parts[1])

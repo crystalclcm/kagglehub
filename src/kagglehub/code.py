@@ -9,7 +9,9 @@ logger = logging.getLogger(__name__)
 
 
 def notebook_output_download(handle: str, path: Optional[str] = None, *, force_download: Optional[bool] = False) -> str:
-    """Download notebook output files.
+    """[EXPERIMENTAL]
+
+    Download notebook output files.
 
     Args:
         handle: (string) the code/notebook handle.

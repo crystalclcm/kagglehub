@@ -214,7 +214,7 @@ class NotebookOutputHttpResolver(Resolver[NotebookHandle]):
         elif cached_response and force_download:
             delete_from_cache(h, path)
 
-        api_path = f"notebooks/{h.owner}/{h.notebook}/output/download"
+        api_path = f"kernels/{h.owner}/{h.notebook}/output/download"  # TODO: change back to "notebooks"
         output_root = Path(get_cached_path(h, path))
 
         # Create the intermediary directories
@@ -223,8 +223,10 @@ class NotebookOutputHttpResolver(Resolver[NotebookHandle]):
         # > 25 files: Download the archive and uncompress
         (files, has_more) = self._list_files(api_client, h)
         if has_more:
-            # TODO(b/379761520): support .tar.gz archived downloads
-            logger.warning(f"Too many files in {h}. Unable to download files.")
+            # TODO(b/379761520): add support for .tar.gz archived downloads
+            logger.warning(
+                f"Too many files in {h} (capped at {MAX_NUM_FILES_DIRECT_DOWNLOAD}). Unable to download files."
+            )
             return ""
 
         # Download files individually in parallel
@@ -246,7 +248,7 @@ class NotebookOutputHttpResolver(Resolver[NotebookHandle]):
         return str(output_root)
 
     def _list_files(self, api_client: KaggleApiV1Client, h: NotebookHandle) -> tuple[list[str], bool]:
-        query = f"notebooks/{h.owner}/{h.notebook}/output/list"
+        query = f"kernels/{h.owner}/{h.notebook}/output/list"
         json_response = api_client.get(query, h)
         if "files" not in json_response:
             msg = "Invalid ApiListKernelSessionOutput API response. Expected to include a 'files' field"
