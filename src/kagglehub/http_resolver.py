@@ -17,7 +17,7 @@ from kagglehub.cache import (
 )
 from kagglehub.clients import KaggleApiV1Client
 from kagglehub.exceptions import UnauthenticatedError
-from kagglehub.handle import CodeHandle, CompetitionHandle, DatasetHandle, ModelHandle, ResourceHandle
+from kagglehub.handle import NotebookHandle, CompetitionHandle, DatasetHandle, ModelHandle, ResourceHandle
 from kagglehub.resolver import Resolver
 
 DATASET_CURRENT_VERSION_FIELD = "currentVersionNumber"
@@ -200,12 +200,12 @@ class ModelHttpResolver(Resolver[ModelHandle]):
         return out_path
 
 
-class NotebookOutputHttpResolver(Resolver[CodeHandle]):
+class NotebookOutputHttpResolver(Resolver[NotebookHandle]):
     def is_supported(self, *_, **__) -> bool:  # noqa: ANN002, ANN003
         # Downloading files over HTTP is supported in all environments for all handles / paths.
         return True
 
-    def __call__(self, h: CodeHandle, path: Optional[str] = None, *, force_download: Optional[bool] = False) -> str:
+    def __call__(self, h: NotebookHandle, path: Optional[str] = None, *, force_download: Optional[bool] = False) -> str:
         api_client = KaggleApiV1Client()
 
         cached_response = load_from_cache(h, path)
@@ -214,7 +214,7 @@ class NotebookOutputHttpResolver(Resolver[CodeHandle]):
         elif cached_response and force_download:
             delete_from_cache(h, path)
 
-        api_path = f"kernels/{h.owner}/{h.notebook}/output/download"
+        api_path = f"notebooks/{h.owner}/{h.notebook}/output/download"
         output_root = Path(get_cached_path(h, path))
 
         # Create the intermediary directories
@@ -245,8 +245,8 @@ class NotebookOutputHttpResolver(Resolver[CodeHandle]):
         # TODO(b/377510971): when notebook is a Kaggle utility script, update sys.path
         return str(output_root)
 
-    def _list_files(self, api_client: KaggleApiV1Client, h: CodeHandle) -> tuple[list[str], bool]:
-        query = f"kernels/{h.owner}/{h.notebook}/output/list"
+    def _list_files(self, api_client: KaggleApiV1Client, h: NotebookHandle) -> tuple[list[str], bool]:
+        query = f"notebooks/{h.owner}/{h.notebook}/output/list"
         json_response = api_client.get(query, h)
         if "files" not in json_response:
             msg = "Invalid ApiListKernelSessionOutput API response. Expected to include a 'files' field"

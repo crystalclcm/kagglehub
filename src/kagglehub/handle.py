@@ -84,13 +84,9 @@ class CompetitionHandle(ResourceHandle):
 
 
 @dataclass
-class CodeHandle(ResourceHandle):
+class NotebookHandle(ResourceHandle):
     owner: str
     notebook: str
-    version: Optional[int] = None
-
-    def is_versioned(self) -> bool:
-        return self.version is not None and self.version > 0
 
     def __str__(self) -> str:
         handle_str = f"{self.owner}/{self.notebook}"
@@ -173,6 +169,6 @@ def parse_competition_handle(handle: str) -> CompetitionHandle:
     return CompetitionHandle(competition=handle)
 
 
-def parse_code_handle(handle: str) -> CodeHandle:
+def parse_notebook_handle(handle: str) -> NotebookHandle:
     parts = handle.split("/")
-    return CodeHandle(owner=parts[0], notebook=parts[1])
+    return NotebookHandle(owner=parts[0], notebook=parts[1])
