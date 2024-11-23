@@ -17,7 +17,7 @@ from kagglehub.cache import (
 )
 from kagglehub.clients import KaggleApiV1Client
 from kagglehub.exceptions import UnauthenticatedError
-from kagglehub.handle import NotebookHandle, CompetitionHandle, DatasetHandle, ModelHandle, ResourceHandle
+from kagglehub.handle import CompetitionHandle, DatasetHandle, ModelHandle, NotebookHandle, ResourceHandle
 from kagglehub.resolver import Resolver
 
 DATASET_CURRENT_VERSION_FIELD = "currentVersionNumber"

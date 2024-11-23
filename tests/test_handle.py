@@ -1,4 +1,4 @@
-from kagglehub.handle import parse_notebook_handle, parse_competition_handle, parse_dataset_handle, parse_model_handle
+from kagglehub.handle import parse_competition_handle, parse_dataset_handle, parse_model_handle, parse_notebook_handle
 from tests.fixtures import BaseTestCase
 
 

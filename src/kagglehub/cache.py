@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Optional
 
 from kagglehub.config import get_cache_folder
-from kagglehub.handle import NotebookHandle, CompetitionHandle, DatasetHandle, ModelHandle, ResourceHandle
+from kagglehub.handle import CompetitionHandle, DatasetHandle, ModelHandle, NotebookHandle, ResourceHandle
 
 DATASETS_CACHE_SUBFOLDER = "datasets"
 NOTEBOOKS_CACHE_SUBFOLDER = "notebooks"  # for resources under kaggle.com/code
