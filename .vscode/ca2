@@ -1,0 +1,142 @@
+# Load the tidyverse package
+library(tidyverse)
+
+# Set the working directory to the folder containing your data files
+setwd("path/to/your/data/folder")  # Adjust the path to where your files are located
+
+# Import the data files
+advertisers <- read_csv("advertiser.csv")
+campaigns <- read_csv("campaigns.csv")
+clicks <- read_tsv("clicks.tsv")
+impressions <- read_tsv("impressions.tsv")
+
+
+convert_to_utc <- function(data) {
+  # Loop through each row of the dataset and apply the conversion
+  for (i in 1:nrow(data)) {
+    date <- data$date[i]
+    time <- data$time[i]
+    timezone <- data$timezone[i]
+    
+    # Check if any of the inputs are missing
+    if (is.na(date) || is.na(time) || is.na(timezone)) {
+      next  # Skip this row if data is missing
+    }
+    
+    # Parse date (dd/mm/yyyy) and time (hh:mm:ss)
+    date_parts <- str_split(date, "/", simplify = TRUE)
+    time_parts <- str_split(time, ":", simplify = TRUE)
+    
+    # Validate date and time format
+    if (length(date_parts) != 3 || length(time_parts) != 3) {
+      next  # Skip invalid rows
+    }
+
+    # Extract day, month, and year from the date
+    day <- as.numeric(date_parts[1])
+    month <- as.numeric(date_parts[2])
+    year <- as.numeric(date_parts[3])
+
+    # Extract hour, minute, and second from the time
+    hour <- as.numeric(time_parts[1])
+    minute <- as.numeric(time_parts[2])
+    second <- as.numeric(time_parts[3])
+
+    # Ensure valid date and time values
+    if (month < 1 || month > 12 || day < 1 || day > 31 || hour < 0 || hour >= 24 || minute < 0 || minute >= 60 || second < 0 || second >= 60) {
+      next  # Skip invalid rows
+    }
+
+    # Adjust time based on timezone and update timezone
+    if (timezone == "Eastern time") {
+      hour <- hour + 5  # EST is UTC - 5
+      data$timezone[i] <- "UTC"  # Update timezone to UTC after adjustment
+    } else if (timezone == "Pacific time") {
+      hour <- hour + 8  # PST is UTC - 8
+      data$timezone[i] <- "UTC"  # Update timezone to UTC after adjustment
+    } else {
+      next  # Skip if the timezone is not recognized
+    }
+
+    # Handle hour overflow and adjust the day accordingly
+    if (hour >= 24) {
+      hour <- hour - 24
+      day <- day + 1
+    } else if (hour < 0) {
+      hour <- hour + 24
+      day <- day - 1
+    }
+
+    # Handle overflow of days in the month (simplified for common months)
+    days_in_month <- c(31, 28 + (year %% 4 == 0 && (year %% 100 != 0 || year %% 400 == 0)), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+
+    if (day > days_in_month[month]) {
+      day <- 1
+      month <- month + 1
+    } else if (day < 1) {
+      month <- month - 1
+      if (month < 1) {
+        month <- 12
+        year <- year - 1
+      }
+      day <- days_in_month[month]
+    }
+
+    # Handle overflow of months (i.e., year transition)
+    if (month > 12) {
+      month <- 1
+      year <- year + 1
+    } else if (month < 1) {
+      month <- 12
+      year <- year - 1
+    }
+
+    # Update the date and time in the dataset
+    data$date[i] <- sprintf("%02d/%02d/%04d", day, month, year)
+    data$time[i] <- sprintf("%02d:%02d:%02d", hour, minute, second)
+  }
+  
+  return(data)
+}
+
+#apply dataset to function
+impressions_processed <- convert_to_utc(impressions)
+clicks_processed <- convert_to_utc(clicks)
+
+#write csv with new timezones
+write.csv(impressions_processed, "impressions_processed.csv", row.names = FALSE)
+write.csv(clicks_processed, "clicks_processed.csv", row.names = FALSE)
+
+#change column name
+ colnames(advertiser)[colnames(advertiser) == "name"] <- "advertiser_name"
+colnames(advertiser)[colnames(advertiser) == "ID"] <- "advertiser_id"
+
+colnames(campaigns)[colnames(campaigns) == "id"] <- "campaign_id"
+colnames(campaigns)[colnames(campaigns) == "name"] <- "campaigns_name"
+
+joined_ad_camp <- advertiser %>%
++     inner_join(campaigns, by = "advertiser_id")
+impressions_processed <- impressions_processed %>%
++     inner_join(joined_ad_camp, by = "campaign_id")
+clicks_processed <- clicks_processed %>%
++     inner_join(joined_ad_camp, by = "campaign_id")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Output the transformed data to CSV files
+write_csv(impressions_processed, "impressions_processed.csv")
+write_csv(clicks_combined, "clicks_processed.csv")
+
+# Print success message
+cat("Data processing complete. 'impressions_processed.csv' and 'clicks_processed.csv' have been saved.\n")
